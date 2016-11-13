@@ -1,0 +1,10 @@
+#!/bin/bash
+
+#sv start socklog-unix || exit 1
+
+source /etc/envvars
+
+sed -i -e "s|source:.*|source: ${DATABASE_SOURCE}|" /etc/clair.yaml
+
+exec 2>&1
+exec clair -config=/etc/clair.yaml
