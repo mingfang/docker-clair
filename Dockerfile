@@ -30,7 +30,8 @@ RUN mkdir -p /go/src/app /go/bin && chmod -R 777 /go
 RUN apt-get install -y gcc
 RUN apt-get install -y bzr rpm xz-utils
 
-RUN git clone --depth 1 https://github.com/coreos/clair.git $GOPATH/src/github.com/coreos/clair
+RUN mkdir -p $GOPATH/src/github.com/coreos/clair && \
+    wget -O - https://github.com/coreos/clair/archive/v1.2.6.tar.gz | tar zx -C $GOPATH/src/github.com/coreos/clair
 RUN cd $GOPATH/src/github.com/coreos/clair && \
     go install -v github.com/coreos/clair/cmd/clair && \
     go get -u github.com/coreos/clair/contrib/analyze-local-images
