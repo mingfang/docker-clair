@@ -4,17 +4,17 @@ ENV DEBIAN_FRONTEND=noninteractive \
     LANG=en_US.UTF-8 \
     TERM=xterm
 RUN locale-gen en_US en_US.UTF-8
-RUN echo "export PS1='\e[1;31m\]\u@\h:\w\\$\[\e[0m\] '" >> /root/.bashrc
-RUN echo "export PS1='\e[1;31m\]\u@\h:\w\\$\[\e[0m\] '" >> /etc/bash.bashrc
+RUN echo "export PS1='\e[1;31m\]\u@\h:\w\\$\[\e[0m\] '" | tee -a /root/.bashrc /etc/bash.bashrc
 RUN apt-get update
 
 # Runit
 RUN apt-get install -y --no-install-recommends runit
 CMD export > /etc/envvars && /usr/sbin/runsvdir-start
 RUN echo 'export > /etc/envvars' >> /root/.bashrc
+RUN echo "alias tcurrent='tail /var/log/*/current -f'" | tee -a /root/.bashrc /etc/bash.bashrc
 
 # Utilities
-RUN apt-get install -y --no-install-recommends vim less net-tools inetutils-ping wget curl git telnet nmap socat dnsutils netcat tree htop unzip sudo software-properties-common jq psmisc iproute python
+RUN apt-get install -y --no-install-recommends vim less net-tools inetutils-ping wget curl git telnet nmap socat dnsutils netcat tree htop unzip sudo software-properties-common jq psmisc iproute python ssh rsync
 
 #Go
 ENV GO_VERSION 1.7
@@ -30,12 +30,9 @@ RUN mkdir -p /go/src/app /go/bin && chmod -R 777 /go
 RUN apt-get install -y gcc
 RUN apt-get install -y bzr rpm xz-utils
 
-RUN mkdir -p $GOPATH/src/github.com/coreos/clair && \
-    wget -O - https://github.com/coreos/clair/archive/v1.2.6.tar.gz | tar zx -C $GOPATH/src/github.com/coreos/clair
-RUN cd $GOPATH/src/github.com/coreos/clair && \
-    go install -v github.com/coreos/clair/cmd/clair && \
-    go get -u github.com/coreos/clair/contrib/analyze-local-images
-
+RUN go get github.com/coreos/clair
+RUN go install github.com/coreos/clair/cmd/clair
+RUN go get -u github.com/coreos/clair/contrib/analyze-local-images
 RUN cp $GOPATH/src/github.com/coreos/clair/config.example.yaml /etc/clair.yaml
 
 # Add runit services
